@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/kartavyasonar/toolgate/internal/mcp"
+	"github.com/kartavyasonar/invokecordon/internal/mcp"
 )
 
 type Finding struct {

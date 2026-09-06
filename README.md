@@ -1,10 +1,10 @@
-# ToolGate
+# InvokeCordon
 
-ToolGate is a security scanner and runtime policy gateway for MCP (Model Context Protocol) servers.
+InvokeCordon is a security scanner and runtime policy gateway for MCP (Model Context Protocol) servers.
 
 It statically analyzes MCP servers to find unsafe tools. At runtime, it acts as a proxy between AI clients and MCP servers to enforce YAML security policies. It blocks or monitors tool calls, redacts secrets, and writes every decision to an audit log.
 
-Note: ToolGate is an independent open source project. It is not affiliated with the official Model Context Protocol project.
+Note: InvokeCordon is an independent open source project. It is not affiliated with the official Model Context Protocol project.
 
 Warning: Only scan or proxy systems you own or have permission to test.
 
@@ -19,7 +19,7 @@ MCP lets AI agents call real tools like shells, databases, and HTTP endpoints. T
 * Unvalidated arguments (path traversal or shell injection payloads passing straight to the tool).
 * No audit trail (no way to prove which agent called which tool).
 
-ToolGate has two modes to fix this:
+InvokeCordon has two modes to fix this:
 
 1. Scan: Static analysis of the server tools. It outputs findings, a 0 to 100 security score, and a letter grade.
 2. Proxy: A runtime gateway that enforces policies on every `tools/call` request.
@@ -54,13 +54,13 @@ These are mock servers. They do not execute real commands or read real files.
 ### 2. Scan it
 
 ```bash
-go run ./cmd/toolgate scan --target http://127.0.0.1:8000/mcp --format=markdown
+go run ./cmd/invokecordon scan --target http://127.0.0.1:8000/mcp --format=markdown
 ```
 
 Example output against the unsafe server:
 
 ```markdown
-# ToolGate Scan Report
+# InvokeCordon Scan Report
 
 **Target:** `http://127.0.0.1:8000/mcp`
 
@@ -86,7 +86,7 @@ Example output against the unsafe server:
 ### 3. Run the proxy
 
 ```bash
-go run ./cmd/toolgate proxy \
+go run ./cmd/invokecordon proxy \
   --listen 127.0.0.1:9090 \
   --target http://127.0.0.1:8000/mcp \
   --policy policies/default.yaml
@@ -116,7 +116,7 @@ curl -X POST http://127.0.0.1:9090/ -H "Content-Type: application/json" -d @safe
 If `mode: enforce` is set in your policy, the proxy blocks the attack and returns an error:
 
 ```json
-{"jsonrpc":"2.0","id":1,"error":{"code":-32600,"message":"ToolGate Policy Denied: Argument violated rule: block_shell_metacharacters"}}
+{"jsonrpc":"2.0","id":1,"error":{"code":-32600,"message":"InvokeCordon Policy Denied: Argument violated rule: block_shell_metacharacters"}}
 ```
 
 ### 5. Check the audit log
@@ -131,7 +131,7 @@ tail -n 1 audit.log
 
 ## CLI Reference
 
-### toolgate scan
+### invokecordon scan
 
 * `--target` (required): MCP server URL.
 * `--format` (default text): Output format (text, json, markdown).
@@ -139,7 +139,7 @@ tail -n 1 audit.log
 
 Scoring starts at 100. Deductions: `missing_schema` (-15), `permissive_schema` (-10), `suspicious_description` (-10), `dangerous_tool_name` (-20). Minimum score is 0. Grades: A (90+), B (80+), C (70+), D (60+), F (below 60).
 
-### toolgate proxy
+### invokecordon proxy
 
 * `--listen` (default 127.0.0.1:9090): Proxy listen address.
 * `--target` (default http://127.0.0.1:8000/mcp): Upstream MCP server.
@@ -190,14 +190,14 @@ Exposed at `/metrics` on the proxy listener in Prometheus format:
 
 | Metric | Type | Labels | Meaning |
 | --- | --- | --- | --- |
-| `toolgate_requests_total` | counter | method, decision | Requests processed |
-| `toolgate_request_duration_seconds` | histogram | method | End-to-end proxy latency |
-| `toolgate_redactions_total` | counter | none | Sensitive fields redacted |
+| `invokecordon_requests_total` | counter | method, decision | Requests processed |
+| `invokecordon_request_duration_seconds` | histogram | method | End-to-end proxy latency |
+| `invokecordon_redactions_total` | counter | none | Sensitive fields redacted |
 
 ## Project Layout
 
 ```text
-cmd/toolgate/          CLI entrypoint (scan, proxy)
+cmd/invokecordon/          CLI entrypoint (scan, proxy)
 internal/mcp/          JSON-RPC 2.0 client and MCP types
 internal/scanner/      Detection rules, scoring engine
 internal/report/       Text, JSON, and Markdown report rendering
@@ -220,7 +220,7 @@ See `docs/threat-model.md` for the full threat model.
 
 * Only supports HTTP JSON-RPC transport right now.
 * Detection is based on patterns and argument inspection. It will not catch every encoding bypass.
-* ToolGate reduces tool-level risk. It does not fix model-level prompt injection.
+* InvokeCordon reduces tool-level risk. It does not fix model-level prompt injection.
 * Example servers are mocks for local testing.
 
 ## Roadmap (v0.2)

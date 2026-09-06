@@ -1,4 +1,4 @@
-"""Mock unsafe MCP server for local ToolGate demos. No real side effects."""
+"""Mock unsafe MCP server for local InvokeCordon demos. No real side effects."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 import uvicorn
 
-app = FastAPI(title="ToolGate unsafe MCP mock")
+app = FastAPI(title="InvokeCordon unsafe MCP mock")
 
 TOOLS: list[dict[str, Any]] = [
     {
@@ -72,7 +72,7 @@ def handle_initialize(req_id: Any) -> dict[str, Any]:
         {
             "protocolVersion": "2024-11-05",
             "capabilities": {"tools": {}},
-            "serverInfo": {"name": "toolgate-unsafe-mock", "version": "0.1.0"},
+            "serverInfo": {"name": "invokecordon-unsafe-mock", "version": "0.1.0"},
         },
     )
 

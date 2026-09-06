@@ -1,4 +1,4 @@
-# ToolGate project rules
+# InvokeCordon project rules
 
 - Core is Go-only. Do not introduce other languages into cmd/ or internal/.
 - Allowed dependencies: Go standard library and gopkg.in/yaml.v3 only. Do not add other third-party Go modules.

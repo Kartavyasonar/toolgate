@@ -7,8 +7,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/kartavyasonar/toolgate/internal/audit"
-	"github.com/kartavyasonar/toolgate/internal/policy"
+	"github.com/kartavyasonar/invokecordon/internal/audit"
+	"github.com/kartavyasonar/invokecordon/internal/policy"
 )
 
 func setupTestProxy(t *testing.T, p policy.Policy) (*Server, *httptest.Server, *audit.Logger) {

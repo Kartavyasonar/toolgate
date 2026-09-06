@@ -9,12 +9,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/kartavyasonar/toolgate/internal/audit"
-	"github.com/kartavyasonar/toolgate/internal/mcp"
-	"github.com/kartavyasonar/toolgate/internal/policy"
-	"github.com/kartavyasonar/toolgate/internal/proxy"
-	"github.com/kartavyasonar/toolgate/internal/report"
-	"github.com/kartavyasonar/toolgate/internal/scanner"
+	"github.com/kartavyasonar/invokecordon/internal/audit"
+	"github.com/kartavyasonar/invokecordon/internal/mcp"
+	"github.com/kartavyasonar/invokecordon/internal/policy"
+	"github.com/kartavyasonar/invokecordon/internal/proxy"
+	"github.com/kartavyasonar/invokecordon/internal/report"
+	"github.com/kartavyasonar/invokecordon/internal/scanner"
 )
 
 func main() {
@@ -60,11 +60,11 @@ func main() {
 }
 
 func usage() {
-	fmt.Println("ToolGate")
+	fmt.Println("InvokeCordon")
 	fmt.Println()
 	fmt.Println("Usage:")
-	fmt.Println("  toolgate scan --target http://127.0.0.1:8000/mcp [--format text|json|markdown] [--output path]")
-	fmt.Println("  toolgate proxy [--listen 127.0.0.1:9090] [--target http://127.0.0.1:8000/mcp] [--policy policies/default.yaml]")
+	fmt.Println("  invokecordon scan --target http://127.0.0.1:8000/mcp [--format text|json|markdown] [--output path]")
+	fmt.Println("  invokecordon proxy [--listen 127.0.0.1:9090] [--target http://127.0.0.1:8000/mcp] [--policy policies/default.yaml]")
 }
 
 func runScan(target, formatStr, outputPath string) error {

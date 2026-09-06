@@ -10,10 +10,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/kartavyasonar/toolgate/internal/audit"
-	"github.com/kartavyasonar/toolgate/internal/metrics"
-	"github.com/kartavyasonar/toolgate/internal/policy"
-	"github.com/kartavyasonar/toolgate/internal/redact"
+	"github.com/kartavyasonar/invokecordon/internal/audit"
+	"github.com/kartavyasonar/invokecordon/internal/metrics"
+	"github.com/kartavyasonar/invokecordon/internal/policy"
+	"github.com/kartavyasonar/invokecordon/internal/redact"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
@@ -79,7 +79,7 @@ func (s *Server) Start(ctx context.Context) error {
 		srv.Shutdown(shutdownCtx)
 	}()
 
-	slog.Info("ToolGate proxy listening", "addr", s.cfg.ListenAddr, "metrics", "/metrics")
+	slog.Info("InvokeCordon proxy listening", "addr", s.cfg.ListenAddr, "metrics", "/metrics")
 	if err := srv.ListenAndServe(); err != http.ErrServerClosed {
 		return err
 	}
@@ -162,7 +162,7 @@ func (s *Server) handleProxy(w http.ResponseWriter, r *http.Request) {
 	metrics.Latency.WithLabelValues(req.Method).Observe(time.Since(start).Seconds())
 
 	if decision.Action == "deny" {
-		s.writeRPCError(w, req.ID, -32600, fmt.Sprintf("ToolGate Policy Denied: %s", decision.Reason))
+		s.writeRPCError(w, req.ID, -32600, fmt.Sprintf("InvokeCordon Policy Denied: %s", decision.Reason))
 		return
 	}
 

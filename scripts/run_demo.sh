@@ -29,6 +29,6 @@ if [[ "${ready}" -ne 1 ]]; then
   exit 1
 fi
 
-echo "=== toolgate scan ==="
-go run ./cmd/toolgate scan --target "http://127.0.0.1:8000/mcp"
+echo "=== invokecordon scan ==="
+go run ./cmd/invokecordon scan --target "http://127.0.0.1:8000/mcp"
 echo "=== scan complete ==="

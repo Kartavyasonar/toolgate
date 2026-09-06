@@ -8,7 +8,7 @@ import (
 var (
 	RequestsTotal = promauto.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "toolgate_requests_total",
+			Name: "invokecordon_requests_total",
 			Help: "Total number of MCP requests processed",
 		},
 		[]string{"method", "decision"},
@@ -16,7 +16,7 @@ var (
 
 	Latency = promauto.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name:    "toolgate_request_duration_seconds",
+			Name:    "invokecordon_request_duration_seconds",
 			Help:    "Latency of MCP requests",
 			Buckets: prometheus.DefBuckets,
 		},
@@ -25,7 +25,7 @@ var (
 
 	RedactionsTotal = promauto.NewCounter(
 		prometheus.CounterOpts{
-			Name: "toolgate_redactions_total",
+			Name: "invokecordon_redactions_total",
 			Help: "Total number of sensitive fields redacted",
 		},
 	)

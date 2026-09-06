@@ -3,7 +3,7 @@ package scanner
 import (
 	"testing"
 
-	"github.com/kartavyasonar/toolgate/internal/mcp"
+	"github.com/kartavyasonar/invokecordon/internal/mcp"
 )
 
 func TestScan(t *testing.T) {

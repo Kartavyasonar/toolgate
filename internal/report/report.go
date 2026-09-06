@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/kartavyasonar/toolgate/internal/scanner"
+	"github.com/kartavyasonar/invokecordon/internal/scanner"
 )
 
 type Format string
@@ -55,7 +55,7 @@ func (r Report) Render(format Format) (string, error) {
 
 func (r Report) renderText() string {
 	var b strings.Builder
-	fmt.Fprintln(&b, "ToolGate Scan Report")
+	fmt.Fprintln(&b, "InvokeCordon Scan Report")
 	fmt.Fprintf(&b, "Target: %s\n", r.Target)
 	fmt.Fprintf(&b, "Score:  %d/100 (%s)\n", r.Result.Score, r.Result.Rating)
 	fmt.Fprintln(&b)
@@ -140,7 +140,7 @@ func (r Report) renderJSON() (string, error) {
 
 func (r Report) renderMarkdown() string {
 	var b strings.Builder
-	fmt.Fprintln(&b, "# ToolGate Scan Report")
+	fmt.Fprintln(&b, "# InvokeCordon Scan Report")
 	fmt.Fprintln(&b)
 	fmt.Fprintf(&b, "**Target:** `%s`\n\n", r.Target)
 	fmt.Fprintf(&b, "**Score:** %d/100 (**%s**)\n\n", r.Result.Score, r.Result.Rating)

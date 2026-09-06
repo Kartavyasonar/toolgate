@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/kartavyasonar/toolgate/internal/scanner"
+	"github.com/kartavyasonar/invokecordon/internal/scanner"
 )
 
 func sampleResult() scanner.ScoreResult {
