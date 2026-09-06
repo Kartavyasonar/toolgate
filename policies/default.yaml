@@ -1,0 +1,36 @@
+version: 1
+mode: monitor
+default_action: allow
+tools:
+  safe_search:
+    action: allow
+  run_command:
+    action: deny
+    reason: Shell execution is not allowed
+  read_file:
+    action: deny
+    reason: Direct filesystem access is not allowed
+  fetch_url:
+    action: deny
+    reason: Arbitrary outbound URL fetching is not allowed
+argument_rules:
+  block_path_traversal: true
+  block_shell_metacharacters: true
+  block_cloud_metadata: true
+redaction:
+  request_fields:
+    - password
+    - token
+    - api_key
+    - secret
+    - private_key
+  response_fields:
+    - ssn
+    - credit_card
+    - password
+    - token
+    - api_key
+audit:
+  log_all_calls: true
+  log_blocked_calls: true
+  include_payload_hash: true

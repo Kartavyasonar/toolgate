@@ -1,0 +1,11 @@
+# ToolGate project rules
+
+- Core is Go-only. Do not introduce other languages into cmd/ or internal/.
+- Allowed dependencies: Go standard library and gopkg.in/yaml.v3 only. Do not add other third-party Go modules.
+- Do not invent MCP protocol behavior. Follow documented MCP JSON-RPC methods and fields. If a behavior is unspecified, leave it unimplemented or document the gap rather than guessing.
+- Security-first: every scanner rule, policy decision, and proxy path must consider bypass cases (encoding, case folding, nested arguments, schema loopholes, missing fields).
+- Tests must be table-driven. Cover happy path, each rule, and explicit non-trigger cases.
+- No frontend, UI framework, or web dashboard.
+- No authentication, billing, or multi-tenancy.
+- Mock MCP servers in examples/ must not execute real commands, read real files, or make real network calls. Return canned mock responses only.
+- Never log secrets (passwords, tokens, API keys, private keys, raw credentials). Prefer hashes or redacted placeholders.
