@@ -1,4 +1,6 @@
 package audit
+import "crypto/sha256"
+import "encoding/hex"
 
 import (
 	"crypto/rand"
@@ -117,4 +119,8 @@ func newRequestID() (string, error) {
 	b[6] = (b[6] & 0x0f) | 0x40
 	b[8] = (b[8] & 0x3f) | 0x80
 	return fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:]), nil
+}
+func HashPayload(payload []byte) string {
+	sum := sha256.Sum256(payload)
+	return hex.EncodeToString(sum[:])
 }

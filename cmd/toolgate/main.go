@@ -5,9 +5,14 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
+	"github.com/kartavyasonar/toolgate/internal/audit"
 	"github.com/kartavyasonar/toolgate/internal/mcp"
+	"github.com/kartavyasonar/toolgate/internal/policy"
+	"github.com/kartavyasonar/toolgate/internal/proxy"
 	"github.com/kartavyasonar/toolgate/internal/report"
 	"github.com/kartavyasonar/toolgate/internal/scanner"
 )
@@ -37,7 +42,16 @@ func main() {
 		}
 
 	case "proxy":
-		fmt.Println("TODO: implement proxy")
+		proxyFlags := flag.NewFlagSet("proxy", flag.ExitOnError)
+		listen := proxyFlags.String("listen", "127.0.0.1:9090", "Proxy listen address")
+		target := proxyFlags.String("target", "http://127.0.0.1:8000/mcp", "Upstream MCP server URL")
+		policyPath := proxyFlags.String("policy", "policies/default.yaml", "Path to policy YAML file")
+		_ = proxyFlags.Parse(os.Args[2:])
+
+		if err := runProxy(*listen, *target, *policyPath); err != nil {
+			fmt.Println("proxy failed:", err)
+			os.Exit(1)
+		}
 
 	default:
 		usage()
@@ -50,7 +64,7 @@ func usage() {
 	fmt.Println()
 	fmt.Println("Usage:")
 	fmt.Println("  toolgate scan --target http://127.0.0.1:8000/mcp [--format text|json|markdown] [--output path]")
-	fmt.Println("  toolgate proxy ...")
+	fmt.Println("  toolgate proxy [--listen 127.0.0.1:9090] [--target http://127.0.0.1:8000/mcp] [--policy policies/default.yaml]")
 }
 
 func runScan(target, formatStr, outputPath string) error {
@@ -88,4 +102,38 @@ func runScan(target, formatStr, outputPath string) error {
 	}
 
 	return nil
+}
+
+func runProxy(listen, target, policyPath string) error {
+	p, err := policy.Load(policyPath)
+	if err != nil {
+		return fmt.Errorf("load policy: %w", err)
+	}
+
+	logger, err := audit.NewLogger("")
+	if err != nil {
+		return fmt.Errorf("init audit logger: %w", err)
+	}
+	defer logger.Close()
+
+	srv := proxy.New(proxy.Config{
+		ListenAddr:  listen,
+		TargetURL:   target,
+		Policy:      p,
+		AuditLogger: logger,
+	})
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Handle graceful shutdown (Ctrl+C)
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-sigChan
+		fmt.Println("\nShutting down proxy...")
+		cancel()
+	}()
+
+	return srv.Start(ctx)
 }
