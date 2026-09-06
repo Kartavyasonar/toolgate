@@ -5,26 +5,12 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/kartavyasonar/toolgate/internal/mcp"
+	"github.com/kartavyasonar/toolgate/internal/report"
 	"github.com/kartavyasonar/toolgate/internal/scanner"
 )
-
-func usage() {
-	fmt.Fprintf(os.Stderr, `ToolGate — security scanner and runtime policy gateway for MCP servers
-
-Usage:
-  toolgate scan --target <url>
-  toolgate proxy
-
-Commands:
-  scan    Scan an MCP server tool list for risky patterns
-  proxy   Runtime policy gateway (not yet implemented)
-
-Flags:
-  scan --target  JSON-RPC HTTP URL of the MCP server (required)
-`)
-}
 
 func main() {
 	if len(os.Args) < 2 {
@@ -34,49 +20,72 @@ func main() {
 
 	switch os.Args[1] {
 	case "scan":
-		if err := runScan(os.Args[2:]); err != nil {
-			fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		scanFlags := flag.NewFlagSet("scan", flag.ExitOnError)
+		target := scanFlags.String("target", "", "MCP server URL")
+		format := scanFlags.String("format", "text", "Output format: text, json, or markdown")
+		output := scanFlags.String("output", "", "File path to write report")
+		_ = scanFlags.Parse(os.Args[2:])
+
+		if *target == "" {
+			fmt.Println("--target is required")
 			os.Exit(1)
 		}
+
+		if err := runScan(*target, *format, *output); err != nil {
+			fmt.Println("scan failed:", err)
+			os.Exit(1)
+		}
+
 	case "proxy":
 		fmt.Println("TODO: implement proxy")
-	case "-h", "-help", "--help", "help":
-		usage()
+
 	default:
-		fmt.Fprintf(os.Stderr, "unknown command: %s\n\n", os.Args[1])
 		usage()
 		os.Exit(2)
 	}
 }
 
-func runScan(args []string) error {
-	fs := flag.NewFlagSet("scan", flag.ContinueOnError)
-	fs.SetOutput(os.Stderr)
-	fs.Usage = usage
-	target := fs.String("target", "", "MCP server JSON-RPC HTTP URL")
-	if err := fs.Parse(args); err != nil {
-		return fmt.Errorf("parse scan flags: %w", err)
-	}
-	if *target == "" {
-		usage()
-		return fmt.Errorf("--target is required")
-	}
+func usage() {
+	fmt.Println("ToolGate")
+	fmt.Println()
+	fmt.Println("Usage:")
+	fmt.Println("  toolgate scan --target http://127.0.0.1:8000/mcp [--format text|json|markdown] [--output path]")
+	fmt.Println("  toolgate proxy ...")
+}
 
-	client := mcp.NewClient(*target)
-	result, err := client.ListTools(context.Background())
+func runScan(target, formatStr, outputPath string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	client := mcp.NewClient(target)
+	result, err := client.ListTools(ctx)
 	if err != nil {
-		return fmt.Errorf("list tools: %w", err)
+		return err
 	}
 
 	findings := scanner.Scan(result.Tools)
-	if len(findings) == 0 {
-		fmt.Println("No findings.")
-		return nil
+	scanner.SortFindings(findings)
+	scoreResult := scanner.Score(findings)
+
+	format, err := report.ParseFormat(formatStr)
+	if err != nil {
+		return err
 	}
 
-	for i, finding := range findings {
-		fmt.Printf("%d. [%s] tool=%s rule=%s message=%s\n",
-			i+1, finding.Severity, finding.Tool, finding.Rule, finding.Message)
+	rep := report.New(target, scoreResult)
+	rendered, err := rep.Render(format)
+	if err != nil {
+		return err
 	}
+
+	if outputPath == "" {
+		fmt.Println(rendered)
+	} else {
+		if err := os.WriteFile(outputPath, []byte(rendered+"\n"), 0644); err != nil {
+			return err
+		}
+		fmt.Fprintf(os.Stderr, "report written to %s\n", outputPath)
+	}
+
 	return nil
 }
