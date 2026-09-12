@@ -1,5 +1,5 @@
 version: 1
-mode: monitor
+mode: enforce
 default_action: allow
 tools:
   safe_search:
