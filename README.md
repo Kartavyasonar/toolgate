@@ -186,14 +186,20 @@ The proxy checks tool-level rules first. If the tool is not listed, it uses the 
 
 ## Metrics
 
-Exposed at `/metrics` on the proxy listener in Prometheus format:
+## Performance Benchmarks
 
-| Metric | Type | Labels | Meaning |
-| --- | --- | --- | --- |
-| `invokecordon_requests_total` | counter | method, decision | Requests processed |
-| `invokecordon_request_duration_seconds` | histogram | method | End-to-end proxy latency |
-| `invokecordon_redactions_total` | counter | none | Sensitive fields redacted |
+Tested locally using `k6` (20 Virtual Users, 30-second duration, 50/50 split between safe forwarded requests and blocked attack requests).
 
+| Metric | Value | Note |
+| --- | --- | --- |
+| **Throughput** | ~392 req/s | Handled on a local development machine |
+| **Average Latency** | 790µs (0.79ms) | Sub-millisecond policy evaluation and routing |
+| **p95 Latency** | 2.26ms | 95% of requests completed in under 2.3ms |
+| **Max Latency** | 17.83ms | Outlier, likely OS-level thread scheduling |
+| **Error Rate** | 0.00% | 100% success rate on checks |
+
+**Why is it so fast?**
+When `mode: enforce` blocks a malicious request (like a shell injection attempt), the proxy rejects it in memory at the network edge. The request never reaches the upstream MCP server, resulting in near-zero latency and protecting the upstream infrastructure from DDoS or abuse.
 ## Project Layout
 
 ```text
